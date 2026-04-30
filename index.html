@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8">
-<title>Inline Evidence Insights - POC Visualisation</title>
+<title>Inline Evidence Insights & Heidi Verify - Architecture Walkthrough</title>
 <style>
   :root {
     --page-bg: #f6f5f2;
@@ -561,10 +561,266 @@
     .flow { grid-template-columns: 1fr; }
     .scope { grid-template-columns: 1fr; }
   }
+
+  /* ---------- Tab nav ---------- */
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+
+  .tabs .tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-align: center;
+  }
+
+  .tabs .tab:hover {
+    color: var(--ink);
+    background: var(--page-bg);
+  }
+
+  .tabs .tab.active {
+    background: var(--ink);
+    color: white;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---------- Heidi Verify tab styles ---------- */
+
+  .step-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .step-card .step-num {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin-bottom: 6px;
+  }
+
+  .step-card .step-num .badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .step-card h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    letter-spacing: -0.3px;
+  }
+
+  .step-card .lede {
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 14.5px;
+    max-width: 720px;
+  }
+
+  .step-card h4 {
+    margin: 22px 0 10px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .step-card h4:first-of-type { margin-top: 8px; }
+
+  /* Variable grid for inputs */
+  .var-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin: 0 0 14px;
+  }
+
+  .var-grid .var {
+    background: var(--page-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink);
+  }
+
+  .var-grid .var .desc {
+    display: block;
+    font-family: inherit;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Image placeholder */
+  .img-placeholder {
+    background: var(--page-bg);
+    border: 2px dashed var(--line);
+    border-radius: 10px;
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin: 16px 0 4px;
+  }
+
+  .img-placeholder .icon {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+
+  /* Pipeline diagram (two-step) */
+  .pipeline {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 14px;
+    align-items: stretch;
+    margin: 0 0 8px;
+  }
+
+  .pipeline .node {
+    background: var(--card);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .pipeline .node.input {
+    background: #f1f6fb;
+    border-color: #c4d8ec;
+  }
+
+  .pipeline .node.llm {
+    background: #fff4e6;
+    border-color: var(--accent);
+  }
+
+  .pipeline .node.calc {
+    background: #f0f9ee;
+    border-color: #c2e2bb;
+  }
+
+  .pipeline .node .nlabel {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .pipeline .node strong { font-size: 13.5px; display: block; }
+
+  .pipeline .arrow {
+    align-self: center;
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  /* Field table */
+  .fields {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    margin-bottom: 8px;
+  }
+
+  .fields th, .fields td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+
+  .fields th {
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--page-bg);
+  }
+
+  .fields code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    background: var(--line-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Two-column field layout (for entity_verification + additional_information) */
+  .twocol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .twocol .col h5 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  @media (max-width: 880px) {
+    .pipeline { grid-template-columns: 1fr; }
+    .pipeline .arrow { transform: rotate(90deg); }
+    .twocol { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-target="tab-inline" role="tab" aria-selected="true">Inline Evidence Insights</button>
+    <button class="tab" data-target="tab-verify" role="tab" aria-selected="false">Heidi Verify Architecture</button>
+  </nav>
+
+  <div class="tab-panel active" id="tab-inline" role="tabpanel">
 
   <header class="page-head">
     <h1>Inline Evidence Insights</h1>
@@ -774,6 +1030,324 @@
   <footer class="page-foot">
     Inline Evidence Insights - POC visualisation - 2026-04-30
   </footer>
+
+  </div><!-- /tab-inline -->
+
+  <div class="tab-panel" id="tab-verify" role="tabpanel">
+
+    <header class="page-head">
+      <h1>Heidi Verify Architecture</h1>
+      <p>How the verification pipeline works under the hood: a two-step LLM call powered by Opus 4.5, followed by a programmatic summary calculation. Outputs feed the Issues tab and All Entities tab in the Scribe UI.</p>
+    </header>
+
+    <!-- UI screenshot -->
+    <section class="support" style="margin-bottom: 28px;">
+      <h2>What it looks like in the Scribe UI</h2>
+      <p class="lede">Note on the left with inline highlights for flagged content. Issues drawer on the right grouped by priority, with source-quote traceability and one-click magic-fix.</p>
+      <img src="Heidi%20Verify%20UI.png" alt="Heidi Verify UI - Issues drawer with potential discrepancy and magic-fix"
+           style="width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: block;"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div style="display: none; background: var(--page-bg); border: 2px dashed var(--line); border-radius: 10px; padding: 36px 20px; text-align: center; color: var(--muted); font-size: 13px;">
+        <div style="font-size: 24px; color: var(--accent); margin-bottom: 6px;">&#9636;</div>
+        Screenshot expected at <code>Heidi Verify UI.png</code> next to this HTML.
+      </div>
+    </section>
+
+    <!-- Top-level pipeline diagram -->
+    <section class="support" style="margin-bottom: 28px;">
+      <h2>End-to-end pipeline</h2>
+      <p class="lede">Two trigger modes: manual (clinician clicks "Verify") and auto (Verify runs automatically once the note is generated). Either way the analysis is asynchronous - typically under a minute. The clinician can navigate away and come back when notified.</p>
+      <div class="pipeline">
+        <div class="node input">
+          <span class="nlabel">Input</span>
+          <strong>Note generation prompt</strong>
+          <small style="color: var(--muted); font-size: 11.5px;">transcript + patient context + template + voice + clinician profile</small>
+        </div>
+        <div class="arrow">&rarr;</div>
+        <div class="node llm">
+          <span class="nlabel">Step 1 - LLM</span>
+          <strong>Entity extraction</strong>
+          <small style="color: var(--muted); font-size: 11.5px;">Opus 4.5</small>
+        </div>
+        <div class="arrow">&rarr;</div>
+        <div class="node llm">
+          <span class="nlabel">Step 2 - LLM</span>
+          <strong>Entity verification</strong>
+          <small style="color: var(--muted); font-size: 11.5px;">Opus 4.5</small>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; margin-top: 14px; align-items: stretch;">
+        <div class="node calc" style="background: #f0f9ee; border: 2px solid #c2e2bb; border-radius: 10px; padding: 14px 16px; font-size: 13px; text-align: center;">
+          <span class="nlabel" style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: block;">Step 3 - programmatic</span>
+          <strong style="font-size: 13.5px; display: block;">Summary calculation</strong>
+          <small style="color: var(--muted); font-size: 11.5px;">no LLM. counts derived from raw arrays</small>
+        </div>
+        <div class="arrow" style="align-self: center; color: var(--muted); font-size: 18px;">&rarr;</div>
+        <div class="node" style="background: #f8f6f0; border: 2px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 13px; text-align: center;">
+          <span class="nlabel" style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: block;">Output</span>
+          <strong style="font-size: 13.5px; display: block;">eval_result row + UI render</strong>
+          <small style="color: var(--muted); font-size: 11.5px;">Issues tab, All Entities tab, source tracing, magic fix</small>
+        </div>
+      </div>
+
+      <div style="background: #fff8eb; border: 1px solid #f4d28a; border-radius: 10px; padding: 14px 18px; margin-top: 18px; font-size: 13.5px; color: #5b3704;">
+        <strong style="display: block; margin-bottom: 4px;">Auto mode - critical-path optimisation</strong>
+        When Verify is set to auto, Step 1 (entity extraction) fires <em>in parallel with the original note generation</em>, since both consume the same source material (transcript + patient context + template). Step 2 (verification) only fires once the note has finished generating, because it needs the final note as input. Net effect: by the time the note appears, the extracted entities are already done; only the verification round-trip and the programmatic summary sit on the critical path before the UI lights up.
+      </div>
+    </section>
+
+    <!-- Step 1 -->
+    <section class="step-card">
+      <div class="step-num"><span class="badge">1</span>Step 1 - Entity Extraction</div>
+      <h2>Extract clinical entities from the inputs</h2>
+      <p class="lede">A single LLM call (Opus 4.5) reads the full note generation prompt and pulls out everything clinically relevant. This establishes the ground truth of what the note should contain. Errs on the side of higher relevance when uncertain.</p>
+
+      <h4>Inputs fed into the prompt</h4>
+      <div class="var-grid">
+        <div class="var">{transcript}<span class="desc">Raw consultation transcript</span></div>
+        <div class="var">{patient_details}<span class="desc">Demographics, history</span></div>
+        <div class="var">{patient_context}<span class="desc">Clinician-supplied context</span></div>
+        <div class="var">{notes}<span class="desc">Contextual notes</span></div>
+        <div class="var">{default_structure}<span class="desc">Note template</span></div>
+        <div class="var">{default_voice}<span class="desc">Style preferences</span></div>
+        <div class="var">{requirements}<span class="desc">Note-gen requirements</span></div>
+        <div class="var">{language}<span class="desc">Session language</span></div>
+        <div class="var">{country}<span class="desc">Clinician country</span></div>
+        <div class="var">{date_today}<span class="desc">Date in clinician's format</span></div>
+      </div>
+
+      <h4>What the LLM returns (real example)</h4>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 10px;">Two real medication extractions from production. Note how Duloxetine matches the input cleanly, while Nifedipine handles a transcription error in the source ("Are nifedipine That's is common") without auto-correcting the underlying clinical term.</p>
+<pre class="json"><span class="p">{</span>
+  <span class="k">"extracted_entities"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="k">"input_entity"</span><span class="p">:</span> <span class="s">"Duloxetine"</span><span class="p">,</span>
+      <span class="k">"input_entity_exact_quotes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"duloxetine"</span><span class="p">],</span>
+      <span class="k">"category"</span><span class="p">:</span> <span class="s">"medications"</span><span class="p">,</span>
+      <span class="k">"relevance"</span><span class="p">:</span> <span class="s">"high"</span><span class="p">,</span>
+      <span class="k">"details"</span><span class="p">:</span> <span class="s">"Current medication - duloxetine is an SNRI antidepressant also used for neuropathic pain and anxiety disorders."</span><span class="p">,</span>
+      <span class="k">"source"</span><span class="p">:</span> <span class="s">"transcript"</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="k">"input_entity"</span><span class="p">:</span> <span class="s">"Nifedipine"</span><span class="p">,</span>
+      <span class="k">"input_entity_exact_quotes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"nifedipine"</span><span class="p">],</span>
+      <span class="k">"category"</span><span class="p">:</span> <span class="s">"medications"</span><span class="p">,</span>
+      <span class="k">"relevance"</span><span class="p">:</span> <span class="s">"high"</span><span class="p">,</span>
+      <span class="k">"details"</span><span class="p">:</span> <span class="s">"Current medication - transcript mentions 'nifedipine' (though transcribed as 'Are nifedipine That's is common' which appears to be a transcription error). Nifedipine is a calcium channel blocker typically used for hypertension or angina."</span><span class="p">,</span>
+      <span class="k">"source"</span><span class="p">:</span> <span class="s">"transcript"</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></pre>
+
+      <h4>Field reference</h4>
+      <table class="fields">
+        <thead>
+          <tr><th>Field</th><th>Values</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>input_entity</code></td><td>string</td><td>Normalised clinical term (e.g. "Duloxetine", "Nifedipine"). Spelling errors in the source are corrected here, but the original quote is preserved in the next field.</td></tr>
+          <tr><td><code>input_entity_exact_quotes</code></td><td>string[]</td><td>Verbatim quotes from the source supporting this entity. Used for source tracing on hover.</td></tr>
+          <tr><td><code>category</code></td><td><code>medications</code>, <code>symptoms</code>, <code>lab_values</code>, <code>vital_signs</code>, <code>procedures</code>, <code>medical_history</code>, <code>diagnoses</code>, <code>demographics</code>, <code>other</code></td><td>Bucket the entity belongs to</td></tr>
+          <tr><td><code>relevance</code></td><td><code>high</code>, <code>medium</code>, <code>low</code></td><td>Clinical relevance ranking</td></tr>
+          <tr><td><code>details</code></td><td>string</td><td>Free-text rationale and clinical context. Includes flags for transcription errors or ambiguity.</td></tr>
+          <tr><td><code>source</code></td><td><code>transcript</code>, <code>context</code>, <code>template</code>, <code>other</code></td><td>Where the entity came from</td></tr>
+        </tbody>
+      </table>
+
+      <h4>UI - source tracing on hover</h4>
+      <div class="img-placeholder">
+        <span class="icon">&#9636;</span>
+        Screenshot placeholder - clinician hovering over an extracted entity, transcript span highlighted
+      </div>
+    </section>
+
+    <!-- Step 2 -->
+    <section class="step-card">
+      <div class="step-num"><span class="badge">2</span>Step 2 - Entity Verification</div>
+      <h2>Verify each entity against the generated note</h2>
+      <p class="lede">A second LLM call (Opus 4.5) takes the extracted entities and the generated clinical note, then for each entity decides: is it present, is it accurately represented, and is there content in the note that wasn't in the source material?</p>
+
+      <h4>Inputs fed into the prompt</h4>
+      <div class="var-grid">
+        <div class="var">{extracted_clinical_entities}<span class="desc">Full JSON output from Step 1</span></div>
+        <div class="var">{clinical_note}<span class="desc">The AI-generated clinical note text</span></div>
+      </div>
+
+      <h4>What the LLM returns (real example)</h4>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 10px;">Real verification output from the same note as the screenshot above. Three parts in one response: <strong>entity_verification[]</strong> (was each Step 1 entity carried through?), <strong>additional_information[]</strong> (anything in the note that wasn't in the source), and <strong>verification_summary</strong> (the counts that drive the Issues / All Entities tabs and the metrics).</p>
+<pre class="json"><span class="p">{</span>
+  <span class="k">"entity_verification"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="k">"input_entity"</span><span class="p">:</span> <span class="s">"Duloxetine"</span><span class="p">,</span>
+      <span class="k">"input_entity_exact_quotes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"duloxetine"</span><span class="p">],</span>
+      <span class="k">"output_entity"</span><span class="p">:</span> <span class="s">"duloxetine"</span><span class="p">,</span>
+      <span class="k">"output_quotes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"Current medications include nifedipine, dapagliflozin, duloxetine, topiramate, and rivaroxaban."</span><span class="p">],</span>
+      <span class="k">"category"</span><span class="p">:</span> <span class="s">"medications"</span><span class="p">,</span>
+      <span class="k">"relevance"</span><span class="p">:</span> <span class="s">"high"</span><span class="p">,</span>
+      <span class="k">"source"</span><span class="p">:</span> <span class="s">"transcript"</span><span class="p">,</span>
+      <span class="k">"present_in_output"</span><span class="p">:</span> <span class="s">true</span><span class="p">,</span>
+      <span class="k">"accuracy_match"</span><span class="p">:</span> <span class="s">"exact"</span><span class="p">,</span>
+      <span class="k">"notes"</span><span class="p">:</span> <span class="s">"Medication correctly identified and included in the output."</span><span class="p">,</span>
+      <span class="k">"suggested_fix"</span><span class="p">:</span> <span class="s">""</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="k">"input_entity"</span><span class="p">:</span> <span class="s">"Male patient"</span><span class="p">,</span>
+      <span class="k">"input_entity_exact_quotes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"He has a known allergy"</span><span class="p">,</span> <span class="s">"he reported mild tingling"</span><span class="p">,</span> <span class="s">"his cough"</span><span class="p">],</span>
+      <span class="k">"output_entity"</span><span class="p">:</span> <span class="s">""</span><span class="p">,</span>
+      <span class="k">"output_quotes"</span><span class="p">:</span> <span class="p">[],</span>
+      <span class="k">"category"</span><span class="p">:</span> <span class="s">"demographics"</span><span class="p">,</span>
+      <span class="k">"relevance"</span><span class="p">:</span> <span class="s">"low"</span><span class="p">,</span>
+      <span class="k">"source"</span><span class="p">:</span> <span class="s">"transcript"</span><span class="p">,</span>
+      <span class="k">"present_in_output"</span><span class="p">:</span> <span class="s">false</span><span class="p">,</span>
+      <span class="k">"accuracy_match"</span><span class="p">:</span> <span class="s">"not_present"</span><span class="p">,</span>
+      <span class="k">"notes"</span><span class="p">:</span> <span class="s">"The output does not explicitly state the patient's gender, though this is a low relevance item and the clinical note format does not always require explicit gender statement."</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+
+  <span class="k">"additional_information"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="k">"output_entity"</span><span class="p">:</span> <span class="s">"Negative Tylenol test"</span><span class="p">,</span>
+      <span class="k">"output_quotes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"Negative Tylenol test."</span><span class="p">],</span>
+      <span class="k">"category"</span><span class="p">:</span> <span class="s">"other"</span><span class="p">,</span>
+      <span class="k">"classification"</span><span class="p">:</span> <span class="s">"potential_hallucination"</span><span class="p">,</span>
+      <span class="k">"severity"</span><span class="p">:</span> <span class="s">"medium"</span><span class="p">,</span>
+      <span class="k">"justification"</span><span class="p">:</span> <span class="s">"The output retains the transcription error 'Tylenol test' which is not a real clinical test. Tylenol is a brand name for acetaminophen. The original transcript likely meant 'Tinel test', a clinical test for nerve compression that would be relevant given the patient's complaint of right hand tingling."</span><span class="p">,</span>
+      <span class="k">"suggested_fix"</span><span class="p">:</span> <span class="s">"Negative Tinel test"</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+
+  <span class="k">"verification_summary"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="k">"total_entities_checked"</span><span class="p">:</span> <span class="s">18</span><span class="p">,</span>
+    <span class="k">"entities_present"</span><span class="p">:</span> <span class="s">17</span><span class="p">,</span>
+    <span class="k">"entities_missing"</span><span class="p">:</span> <span class="s">1</span><span class="p">,</span>
+    <span class="k">"entities_high_relevance_missing"</span><span class="p">:</span> <span class="s">0</span><span class="p">,</span>
+    <span class="k">"entities_medium_relevance_missing"</span><span class="p">:</span> <span class="s">0</span><span class="p">,</span>
+    <span class="k">"entities_low_relevance_missing"</span><span class="p">:</span> <span class="s">1</span><span class="p">,</span>
+    <span class="k">"entities_inaccurate"</span><span class="p">:</span> <span class="s">1</span><span class="p">,</span>
+    <span class="k">"coverage_percentage"</span><span class="p">:</span> <span class="s">94.4</span><span class="p">,</span>
+    <span class="k">"potential_hallucinations"</span><span class="p">:</span> <span class="s">1</span><span class="p">,</span>
+    <span class="k">"potential_high_severity_hallucinations"</span><span class="p">:</span> <span class="s">0</span><span class="p">,</span>
+    <span class="k">"potential_medium_severity_hallucinations"</span><span class="p">:</span> <span class="s">1</span><span class="p">,</span>
+    <span class="k">"potential_low_severity_hallucinations"</span><span class="p">:</span> <span class="s">0</span><span class="p">,</span>
+    <span class="k">"supported_inferences"</span><span class="p">:</span> <span class="s">0</span>
+  <span class="p">}</span>
+<span class="p">}</span></pre>
+
+      <div style="background: #fff8eb; border: 1px solid #f4d28a; border-radius: 10px; padding: 14px 16px; margin-top: 12px; font-size: 13px; color: #5b3704;">
+        <strong>Trace it back to the UI screenshot at the top of this tab:</strong> the <code>additional_information</code> entry above ("Negative Tylenol test", potential_hallucination, medium severity, suggested_fix "Negative Tinel test") is exactly what renders in the Issues drawer. The "Was this helpful?" inline popover on the highlighted span shows the source quote ("Tinel test negative") - that's the <code>input_entity_exact_quotes</code> from Step 1 wired through.
+      </div>
+
+      <h4>Three output sections</h4>
+      <div class="twocol">
+        <div class="col">
+          <h5>entity_verification[]</h5>
+          <p style="margin: 0 0 8px; font-size: 13px; color: var(--muted);">For each entity from Step 1: was it carried into the note? Is the representation accurate? Drives the All Entities tab.</p>
+          <table class="fields">
+            <tbody>
+              <tr><td><code>input_entity</code></td><td>Original entity from extraction</td></tr>
+              <tr><td><code>output_entity</code></td><td>How it appears in the note (empty if missing)</td></tr>
+              <tr><td><code>present_in_output</code></td><td><code>true</code> / <code>false</code> (defaults true if omitted)</td></tr>
+              <tr><td><code>accuracy_match</code></td><td><code>exact</code>, <code>partial</code>, <code>inaccurate</code>, <code>not_present</code></td></tr>
+              <tr><td><code>output_quotes</code></td><td>Verbatim quotes from the note</td></tr>
+              <tr><td><code>notes</code></td><td>Free-text rationale, surfaced in the drawer</td></tr>
+              <tr><td><code>suggested_fix</code></td><td>One-click magic-fix replacement text</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col">
+          <h5>additional_information[]</h5>
+          <p style="margin: 0 0 8px; font-size: 13px; color: var(--muted);">Content found in the note that wasn't in any source material. Classified as a hallucination or a supported inference. Drives the Issues tab.</p>
+          <table class="fields">
+            <tbody>
+              <tr><td><code>output_entity</code></td><td>Content found in note but not source</td></tr>
+              <tr><td><code>classification</code></td><td><code>potential_hallucination</code> or <code>supported_inference</code></td></tr>
+              <tr><td><code>severity</code></td><td><code>high</code>, <code>medium</code>, <code>low</code></td></tr>
+              <tr><td><code>justification</code></td><td>Why this was flagged</td></tr>
+              <tr><td><code>output_quotes</code></td><td>Verbatim quotes from the note</td></tr>
+              <tr><td><code>suggested_fix</code></td><td>Replacement text (empty = remove)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h5 style="margin: 18px 0 8px; font-size: 13px;">verification_summary</h5>
+      <p style="margin: 0 0 8px; font-size: 13px; color: var(--muted);">Aggregate counts in one object. Coverage = entities_present / total_entities_checked. Hallucinations bucketed by severity, missing entities bucketed by relevance. These are the numbers behind the "Issues 3 / All 17" indicators in the UI.</p>
+    </section>
+
+    <!-- Step 3 -->
+    <section class="step-card">
+      <div class="step-num"><span class="badge">3</span>Step 3 - Programmatic summary</div>
+      <h2>Calculate summary metrics from the raw arrays</h2>
+      <p class="lede">No LLM. The verification LLM's own summary counts are deliberately ignored. Every aggregate metric is calculated by iterating over the two arrays from Step 2, so the numbers always reconcile with the detailed data and the eval pipeline matches production.</p>
+
+      <h4>Output - 13 fields written to <code>eval_result</code></h4>
+      <table class="fields">
+        <thead>
+          <tr><th>Field</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>total_input_entities_checked</code></td><td>Total entities verified</td></tr>
+          <tr><td><code>input_entities_present_in_output</code></td><td>Entities found in the note</td></tr>
+          <tr><td><code>input_entities_missing_in_output</code></td><td>Total minus present</td></tr>
+          <tr><td><code>input_entities_high_relevance_missing</code></td><td>Missing entities, high relevance</td></tr>
+          <tr><td><code>input_entities_medium_relevance_missing</code></td><td>Missing entities, medium relevance</td></tr>
+          <tr><td><code>input_entities_low_relevance_missing</code></td><td>Missing entities, low relevance</td></tr>
+          <tr><td><code>input_entities_inaccurately_present</code></td><td>Present but represented incorrectly</td></tr>
+          <tr><td><code>input_entities_coverage_percentage</code></td><td>(present / total) x 100</td></tr>
+          <tr><td><code>potential_hallucinations</code></td><td>Total unsupported content items</td></tr>
+          <tr><td><code>potential_high_severity_hallucinations</code></td><td>High severity hallucinations</td></tr>
+          <tr><td><code>potential_medium_severity_hallucinations</code></td><td>Medium severity hallucinations</td></tr>
+          <tr><td><code>potential_low_severity_hallucinations</code></td><td>Low severity hallucinations</td></tr>
+          <tr><td><code>supported_inferences</code></td><td>Clinically justified additions</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Metrics - precision and recall</h4>
+      <p style="font-size: 13.5px; margin: 0 0 10px;">From the 13 fields above, two clinical quality dimensions are derived per record and averaged across the dataset:</p>
+      <div class="twocol">
+        <div class="col">
+          <h5>Precision (by hallucination severity)</h5>
+          <p style="font-size: 13px; color: var(--muted); margin: 0;">"How trustworthy is the note?" present / (present + hallucinations at that severity). Penalises false positives.</p>
+        </div>
+        <div class="col">
+          <h5>Recall (by entity relevance)</h5>
+          <p style="font-size: 13px; color: var(--muted); margin: 0;">"How complete is the note?" present / (present + missing at that relevance). Penalises false negatives.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why this matters -->
+    <section class="support">
+      <h2>Why the architecture looks like this</h2>
+      <div class="scope">
+        <div class="col">
+          <h3>Design choices</h3>
+          <ul>
+            <li>Two-step pipeline so extraction and verification can evolve independently and use different prompts.</li>
+            <li>Opus 4.5 on both steps - chose accuracy and depth over latency.</li>
+            <li>LLM-reported summary counts deliberately ignored. All aggregates are programmatic.</li>
+            <li>Exact quotes captured in both directions for source tracing in the UI.</li>
+            <li>Suggested fixes generated at verification time so magic-fix is one click.</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>Trade-offs</h3>
+          <ul>
+            <li>Latency typically under a minute. Async by design - clinician can navigate away.</li>
+            <li>Verifies note against transcript only. Transcript errors are not caught.</li>
+            <li>Estimated 1-2% false negative rate.</li>
+            <li>Quality bound by transcript quality.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-foot">
+      Heidi Verify - architecture walkthrough - 2026-04-30
+    </footer>
+
+  </div><!-- /tab-verify -->
+
 </div>
 
 <script>
@@ -930,6 +1504,21 @@
   function closeInteractions() {
     document.getElementById('interactions-panel').classList.remove('open');
   }
+
+  // ---------- Tab switching ----------
+  document.querySelectorAll('.tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.target;
+      document.querySelectorAll('.tabs .tab').forEach(t => {
+        t.classList.toggle('active', t === tab);
+        t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+      });
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === target);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
 </script>
 </body>
 </html>
