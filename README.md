@@ -15,4 +15,4 @@ Then open http://localhost:3000.
 
 This repo is auto-deployed to Railway on every push to `main`.
 
-Live URL: _to be filled in once the first deploy is up_.
+Live URL: https://inline-evidence-insights-production.up.railway.app
