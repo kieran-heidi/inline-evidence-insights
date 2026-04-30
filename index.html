@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<title>Inline Evidence Insights - POC Visualisation</title>
+<style>
+  :root {
+    --page-bg: #f6f5f2;
+    --card: #ffffff;
+    --ink: #1d1d1b;
+    --muted: #6f6f6a;
+    --line: #e7e6e1;
+    --line-soft: #f0efe9;
+    --pill-bg: #d8f4d4;
+    --pill-bg-hover: #c8edc4;
+    --pill-ink: #1d1d1b;
+    --orange-soft: #fde0c0;
+    --accent: #f86f0d;
+    --accent-ink: #c8580a;
+    --code-bg: #1e1e1e;
+    --code-ink: #e6e6e6;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
+    background: var(--page-bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 28px 96px;
+  }
+
+  header.page-head {
+    margin-bottom: 32px;
+  }
+
+  header.page-head h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    letter-spacing: -0.4px;
+  }
+
+  header.page-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* ---------- Note pane (Heidi look) ---------- */
+
+  .note-pane {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: visible;
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--card);
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.12s ease;
+  }
+
+  .tb-btn:hover { background: var(--page-bg); }
+
+  .tb-btn .ico { font-size: 14px; }
+
+  .tb-icon-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--card);
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .tb-icon-btn:hover { background: var(--page-bg); color: var(--ink); }
+
+  .tb-copy {
+    background: #f1efe7;
+    border: 1px solid var(--line);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tb-copy:hover { background: #e7e4d8; }
+
+  /* Note body */
+  .note-body {
+    padding: 24px 32px 28px;
+    font-size: 14.5px;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+
+  .note-body h3 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 20px 0 6px;
+  }
+
+  .note-body h3:first-child { margin-top: 4px; }
+
+  .note-body ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .note-body li {
+    position: relative;
+    padding-left: 14px;
+    margin-bottom: 4px;
+  }
+
+  .note-body li::before {
+    content: "-";
+    position: absolute;
+    left: 0;
+    color: var(--ink);
+  }
+
+  /* Entity pills */
+  .ent {
+    display: inline-block;
+    background: var(--pill-bg);
+    color: var(--pill-ink);
+    padding: 1px 7px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+    line-height: 1.5;
+  }
+
+  .ent:hover { background: var(--pill-bg-hover); }
+
+  .ent.flagged {
+    background: var(--orange-soft);
+  }
+
+  /* Footer */
+  .note-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .note-footer .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .note-footer .right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .note-footer .meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .note-footer .issue { color: var(--accent-ink); }
+
+  /* ---------- Popover ---------- */
+
+  #popover {
+    position: absolute;
+    z-index: 60;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    width: 280px;
+    padding: 0;
+    display: none;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  .pop-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .pop-row + .pop-row { border-top: 1px solid var(--line-soft); }
+
+  .pop-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pop-tick {
+    color: #15803d;
+  }
+
+  .pop-row .label {
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .pop-row .chev {
+    color: var(--muted);
+  }
+
+  .pop-quote {
+    background: #faf9f4;
+    margin: 8px 14px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line-soft);
+    color: var(--muted);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+  }
+
+  .pop-detail {
+    padding: 10px 14px 4px;
+  }
+
+  .pop-detail dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 6px 10px;
+    font-size: 12px;
+  }
+
+  .pop-detail dt {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .pop-detail dd {
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .pop-action {
+    border-top: 1px solid var(--line-soft);
+    padding: 10px 14px;
+    background: #fafaf6;
+  }
+
+  .pop-action button {
+    width: 100%;
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.12s ease;
+  }
+
+  .pop-action button:hover { background: #2d2d2a; }
+
+  .pop-action button .spark {
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  /* ---------- Interactions panel ---------- */
+
+  #interactions-panel {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    margin-bottom: 32px;
+    display: none;
+    box-shadow: var(--shadow);
+  }
+
+  #interactions-panel.open { display: block; }
+
+  .ip-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ip-head .title {
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ip-head .title .spark { color: var(--accent); }
+
+  .ip-head .close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 18px;
+    padding: 0 4px;
+  }
+
+  .ip-body {
+    padding: 16px 20px;
+    font-size: 13.5px;
+  }
+
+  .ip-meds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .ip-meds .pill {
+    background: var(--pill-bg);
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 12.5px;
+  }
+
+  .ip-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .ip-list li {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: #fdfcf8;
+  }
+
+  .ip-list li .pair {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+
+  .ip-list li .sev {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+
+  .sev.minor { background: #e8f3ff; color: #1d4ed8; }
+  .sev.moderate { background: #fff1d6; color: #9a3412; }
+  .sev.major { background: #ffe2e2; color: #b91c1c; }
+  .sev.none { background: #e8f8e8; color: #166534; }
+
+  .ip-list li .body { color: var(--muted); font-size: 12.5px; }
+
+  .ip-source {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  /* ---------- Supporting sections ---------- */
+
+  section.support {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+
+  section.support h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    letter-spacing: -0.2px;
+  }
+
+  section.support .lede {
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+
+  .flow .step {
+    background: var(--page-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .flow .step .num {
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .flow .step .title { font-weight: 600; }
+
+  .flow .step .detail { color: var(--muted); font-size: 12.5px; }
+
+  .flow .step.parallel {
+    background: #fff3e6;
+    border-color: var(--accent);
+  }
+
+  .flow .step.parallel .num { color: var(--accent-ink); }
+
+  pre.json {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .json .k { color: #9cdcfe; }
+  .json .s { color: #ce9178; }
+  .json .p { color: #b6b6b6; }
+
+  .scope {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .scope .col h3 {
+    font-size: 12.5px;
+    margin: 0 0 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .scope ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13.5px;
+  }
+
+  .scope li { margin-bottom: 5px; }
+
+  footer.page-foot {
+    margin-top: 28px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .hint {
+    background: #fff8eb;
+    border: 1px solid #f4d28a;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #7c4a04;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 880px) {
+    .flow { grid-template-columns: 1fr; }
+    .scope { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <h1>Inline Evidence Insights</h1>
+    <p>POC walkthrough. Hover any green pill for the popover. Click "Check interactions with Heidi evidence" inside any medication popover.</p>
+  </header>
+
+  <div class="hint">
+    <span>Tip: hover over <em>metformin</em>, <em>ramipril</em>, <em>apixaban</em>, or <em>atorvastatin</em> in the note below.</span>
+  </div>
+
+  <!-- Note pane (Heidi look) -->
+  <div class="note-pane" id="note">
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="tb-btn"><span class="ico">✦</span>Auto</button>
+        <button class="tb-btn"><span class="ico">✎</span>Goldilocks</button>
+        <button class="tb-icon-btn">···</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="tb-icon-btn">🎙</button>
+        <button class="tb-icon-btn">↶</button>
+        <button class="tb-icon-btn">↷</button>
+        <button class="tb-copy">Copy <span style="color: var(--muted);">▾</span></button>
+      </div>
+    </div>
+
+    <div class="note-body">
+      <h3>HISTORY OF PRESENTING COMPLAINT</h3>
+      <ul>
+        <li>Mr Smith, 68M, with three weeks of worsening <span class="ent" data-cat="symptom" data-term="dyspnoea on exertion">dyspnoea on exertion</span>, bilateral ankle swelling, and orthopnoea.</li>
+      </ul>
+
+      <h3>PAST MEDICAL HISTORY</h3>
+      <ul>
+        <li><span class="ent" data-cat="diagnosis" data-term="type 2 diabetes mellitus">Type 2 diabetes mellitus</span>, diagnosed several years ago.</li>
+        <li><span class="ent" data-cat="diagnosis" data-term="hypertension">Hypertension</span>, well-controlled.</li>
+        <li><span class="ent" data-cat="diagnosis" data-term="atrial fibrillation">Atrial fibrillation</span>, paroxysmal.</li>
+      </ul>
+
+      <h3>MEDICATIONS</h3>
+      <ul>
+        <li><span class="ent" data-cat="medication" data-term="metformin">Metformin 500mg BD</span></li>
+        <li><span class="ent" data-cat="medication" data-term="ramipril">Ramipril 5mg OD</span></li>
+        <li><span class="ent" data-cat="medication" data-term="apixaban">Apixaban 5mg BD</span></li>
+        <li><span class="ent" data-cat="medication" data-term="atorvastatin">Atorvastatin 40mg ON</span></li>
+      </ul>
+
+      <h3>PHYSICAL EXAMINATION</h3>
+      <ul>
+        <li><span class="ent" data-cat="examination_sign" data-term="vitals stable">Vitals stable</span> aside from BP 142/88 and HR 78 irregular.</li>
+        <li><span class="ent" data-cat="examination_sign" data-term="bibasal crepitations">Bibasal crepitations</span>, JVP elevated.</li>
+      </ul>
+
+      <h3>INVESTIGATIONS</h3>
+      <ul>
+        <li>ECG showing AF with controlled ventricular response.</li>
+        <li>Bloods: Hb 11.8, eGFR 52, <span class="ent" data-cat="investigation" data-term="NT-proBNP">NT-proBNP 1240</span>.</li>
+      </ul>
+
+      <h3>IMPRESSION</h3>
+      <ul>
+        <li><span class="ent" data-cat="diagnosis" data-term="decompensated heart failure">Decompensated heart failure</span> on a background of AF and hypertension.</li>
+      </ul>
+
+      <h3>PLAN</h3>
+      <ul>
+        <li><span class="ent" data-cat="management_plan" data-term="increase ramipril">Increase ramipril to 10mg OD</span>.</li>
+        <li><span class="ent" data-cat="management_plan" data-term="add bisoprolol">Add bisoprolol 2.5mg OD</span>.</li>
+        <li>Urgent <span class="ent" data-cat="investigation" data-term="echocardiogram">echocardiogram</span>, cardiology follow up in two weeks.</li>
+      </ul>
+
+      <div id="popover" role="tooltip"></div>
+    </div>
+
+    <div class="note-footer">
+      <div class="left">
+        <span>👍</span>
+        <span>👎</span>
+        <span>Review your note before use to ensure it accurately represents the visit</span>
+      </div>
+      <div class="right">
+        <span class="meta">✦ Personalisation off</span>
+        <span class="meta">⌗ 0/4 codes</span>
+        <span class="meta">✓ 0/1 tasks</span>
+        <span class="meta issue">⚠ 0 issues</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactions panel (slides into view when triggered) -->
+  <div id="interactions-panel">
+    <div class="ip-head">
+      <div class="title"><span class="spark">✦</span>Drug interactions - Heidi evidence</div>
+      <button class="close" onclick="closeInteractions()">✕</button>
+    </div>
+    <div class="ip-body">
+      <div class="ip-meds">
+        <span class="pill">metformin</span>
+        <span class="pill">ramipril</span>
+        <span class="pill">apixaban</span>
+        <span class="pill">atorvastatin</span>
+      </div>
+      <ul class="ip-list">
+        <li>
+          <div class="pair">Apixaban + atorvastatin <span class="sev minor">Minor</span></div>
+          <div class="body">Atorvastatin is a mild CYP3A4 inhibitor; small theoretical increase in apixaban exposure. No dose change required.</div>
+        </li>
+        <li>
+          <div class="pair">Ramipril + bisoprolol (planned) <span class="sev moderate">Moderate</span></div>
+          <div class="body">Additive hypotensive effect on initiation. Recommend BP review after first dose and at one week.</div>
+        </li>
+        <li>
+          <div class="pair">Metformin + ramipril <span class="sev minor">Minor</span></div>
+          <div class="body">Theoretical risk of hypoglycaemia with ACE inhibitors. Clinically rarely significant; standard monitoring.</div>
+        </li>
+        <li>
+          <div class="pair">Across the full medication list <span class="sev none">No major interactions</span></div>
+          <div class="body">No contraindicated combinations identified.</div>
+        </li>
+      </ul>
+      <div class="ip-source">Source: Heidi evidence drug-interactions service. Mock data for POC visualisation.</div>
+    </div>
+  </div>
+
+  <!-- Architecture flow -->
+  <section class="support">
+    <h2>How it fires</h2>
+    <p class="lede">Triggered when the original note lands in the database. One light LLM call against the note returns a categorised JSON. Medication entries fan out to MIMS in parallel so popovers are warm by the time the clinician hovers.</p>
+    <div class="flow">
+      <div class="step">
+        <span class="num">Step 1</span>
+        <span class="title">Note generated</span>
+        <span class="detail">Original note populated in DB.</span>
+      </div>
+      <div class="step">
+        <span class="num">Step 2</span>
+        <span class="title">Extraction call</span>
+        <span class="detail">Light LLM. Output-only.</span>
+      </div>
+      <div class="step">
+        <span class="num">Step 3</span>
+        <span class="title">JSON returned</span>
+        <span class="detail">Categorised entities. Generic names for meds.</span>
+      </div>
+      <div class="step parallel">
+        <span class="num">Step 4 - parallel</span>
+        <span class="title">MIMS fan-out</span>
+        <span class="detail">One API call per generic medication. Cached per session.</span>
+      </div>
+      <div class="step">
+        <span class="num">Step 5</span>
+        <span class="title">UI ready</span>
+        <span class="detail">Hover popovers + interactions check live in the note.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- JSON shape -->
+  <section class="support">
+    <h2>What the LLM returns</h2>
+    <p class="lede">Flat JSON, no offsets, no IDs. The TipTap extension finds <code>raw_span</code> in the rendered note via string match and decorates it.</p>
+<pre class="json"><span class="p">{</span>
+  <span class="k">"output_entities"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"medication"</span><span class="p">,</span>      <span class="k">"term"</span><span class="p">:</span> <span class="s">"metformin"</span><span class="p">,</span>                  <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Metformin 500mg BD"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"medication"</span><span class="p">,</span>      <span class="k">"term"</span><span class="p">:</span> <span class="s">"ramipril"</span><span class="p">,</span>                   <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Ramipril 5mg OD"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"medication"</span><span class="p">,</span>      <span class="k">"term"</span><span class="p">:</span> <span class="s">"apixaban"</span><span class="p">,</span>                   <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Apixaban 5mg BD"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"medication"</span><span class="p">,</span>      <span class="k">"term"</span><span class="p">:</span> <span class="s">"atorvastatin"</span><span class="p">,</span>               <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Atorvastatin 40mg ON"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"diagnosis"</span><span class="p">,</span>       <span class="k">"term"</span><span class="p">:</span> <span class="s">"type 2 diabetes mellitus"</span><span class="p">,</span>   <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Type 2 diabetes mellitus"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"diagnosis"</span><span class="p">,</span>       <span class="k">"term"</span><span class="p">:</span> <span class="s">"atrial fibrillation"</span><span class="p">,</span>        <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Atrial fibrillation"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"investigation"</span><span class="p">,</span>   <span class="k">"term"</span><span class="p">:</span> <span class="s">"NT-proBNP"</span><span class="p">,</span>                  <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"NT-proBNP 1240"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"symptom"</span><span class="p">,</span>         <span class="k">"term"</span><span class="p">:</span> <span class="s">"dyspnoea on exertion"</span><span class="p">,</span>        <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"dyspnoea on exertion"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"examination_sign"</span><span class="p">,</span><span class="k">"term"</span><span class="p">:</span> <span class="s">"bibasal crepitations"</span><span class="p">,</span>        <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Bibasal crepitations"</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="k">"category"</span><span class="p">:</span> <span class="s">"management_plan"</span><span class="p">,</span> <span class="k">"term"</span><span class="p">:</span> <span class="s">"add bisoprolol"</span><span class="p">,</span>             <span class="k">"raw_span"</span><span class="p">:</span> <span class="s">"Add bisoprolol 2.5mg OD"</span> <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></pre>
+  </section>
+
+  <!-- Scope -->
+  <section class="support">
+    <h2>Scope</h2>
+    <div class="scope">
+      <div class="col">
+        <h3>In scope (POC)</h3>
+        <ul>
+          <li>Output-only entity extraction with one light LLM call.</li>
+          <li>Six categories captured. Medications wired to UI.</li>
+          <li>Eager parallel MIMS fetch for medication TLDRs.</li>
+          <li>Popover anchored to the highlighted span.</li>
+          <li>"Check interactions" action in every medication popover.</li>
+          <li>String-matching via TipTap extension. No offsets, no IDs.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Out of scope (for now)</h3>
+        <ul>
+          <li>Country routing. MIMS only.</li>
+          <li>Vector DB lookup. Long-term direction, not POC.</li>
+          <li>UI affordances for diagnoses, investigations, symptoms, signs, plans.</li>
+          <li>Personalised guideline matching against patient context.</li>
+          <li>Re-running on note edits. Fires once per generation.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="page-foot">
+    Inline Evidence Insights - POC visualisation - 2026-04-30
+  </footer>
+</div>
+
+<script>
+  const popover = document.getElementById('popover');
+  const note = document.getElementById('note');
+
+  // Mock MIMS-style data for medications + light cards for other categories.
+  const data = {
+    medication: {
+      metformin: {
+        rows: {
+          'Class': 'Biguanide',
+          'Indication': 'Type 2 diabetes (first-line)',
+          'Caution': 'Renal impairment, lactic acidosis risk',
+          'Common dose': '500mg BD with food'
+        }
+      },
+      ramipril: {
+        rows: {
+          'Class': 'ACE inhibitor',
+          'Indication': 'Hypertension, heart failure',
+          'Caution': 'Renal artery stenosis, hyperkalaemia',
+          'Common dose': '2.5-10mg OD'
+        }
+      },
+      apixaban: {
+        rows: {
+          'Class': 'DOAC, factor Xa inhibitor',
+          'Indication': 'Stroke prevention in non-valvular AF',
+          'Caution': 'Active bleeding, severe renal impairment',
+          'Common dose': '5mg BD'
+        }
+      },
+      atorvastatin: {
+        rows: {
+          'Class': 'HMG-CoA reductase inhibitor',
+          'Indication': 'Hypercholesterolaemia, CV risk reduction',
+          'Caution': 'Active liver disease, monitor LFTs',
+          'Common dose': '20-80mg ON'
+        }
+      }
+    },
+    diagnosis: {
+      'type 2 diabetes mellitus': { label: 'Diagnosis', rows: { 'Term': 'Type 2 diabetes mellitus' } },
+      'hypertension': { label: 'Diagnosis', rows: { 'Term': 'Hypertension' } },
+      'atrial fibrillation': { label: 'Diagnosis', rows: { 'Term': 'Atrial fibrillation' } },
+      'decompensated heart failure': { label: 'Diagnosis', rows: { 'Term': 'Decompensated heart failure' } }
+    },
+    investigation: {
+      'NT-proBNP': { label: 'Investigation', rows: { 'Term': 'NT-proBNP' } },
+      'echocardiogram': { label: 'Investigation', rows: { 'Term': 'Echocardiogram' } }
+    },
+    symptom: {
+      'dyspnoea on exertion': { label: 'Symptom', rows: { 'Term': 'Dyspnoea on exertion' } }
+    },
+    examination_sign: {
+      'vitals stable': { label: 'Examination sign', rows: { 'Term': 'Vitals stable' } },
+      'bibasal crepitations': { label: 'Examination sign', rows: { 'Term': 'Bibasal crepitations' } }
+    },
+    management_plan: {
+      'increase ramipril': { label: 'Management plan', rows: { 'Term': 'Increase ramipril to 10mg OD' } },
+      'add bisoprolol': { label: 'Management plan', rows: { 'Term': 'Add bisoprolol 2.5mg OD' } }
+    }
+  };
+
+  let popoverHoverTimer = null;
+
+  document.querySelectorAll('.ent').forEach(el => {
+    el.addEventListener('mouseenter', (e) => showPopover(e.target));
+    el.addEventListener('mouseleave', scheduleHide);
+  });
+
+  popover.addEventListener('mouseenter', () => {
+    if (popoverHoverTimer) {
+      clearTimeout(popoverHoverTimer);
+      popoverHoverTimer = null;
+    }
+  });
+  popover.addEventListener('mouseleave', scheduleHide);
+
+  function showPopover(target) {
+    const cat = target.dataset.cat;
+    const term = target.dataset.term;
+    const entry = (data[cat] || {})[term];
+    if (!entry) return;
+
+    let html = '';
+
+    if (cat === 'medication') {
+      // Drug header
+      html += `
+        <div class="pop-row">
+          <span class="pop-icon pop-tick">✓</span>
+          <span class="label">${capitalise(term)}</span>
+          <span class="chev">›</span>
+        </div>
+        <div class="pop-detail"><dl>`;
+      for (const [k, v] of Object.entries(entry.rows)) {
+        html += `<dt>${k}</dt><dd>${v}</dd>`;
+      }
+      html += `</dl></div>`;
+      html += `
+        <div class="pop-action">
+          <button onclick="openInteractions()"><span class="spark">✦</span>Check interactions with Heidi evidence</button>
+        </div>`;
+    } else {
+      // Other categories - lighter popover
+      html += `
+        <div class="pop-row">
+          <span class="pop-icon pop-tick">✓</span>
+          <span class="label">${entry.label || cat}</span>
+        </div>
+        <div class="pop-detail"><dl>`;
+      for (const [k, v] of Object.entries(entry.rows)) {
+        html += `<dt>${k}</dt><dd>${v}</dd>`;
+      }
+      html += `</dl></div>`;
+    }
+
+    popover.innerHTML = html;
+
+    // Position relative to the note pane
+    const noteRect = note.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const top = targetRect.bottom - noteRect.top + 8;
+    let left = targetRect.left - noteRect.left;
+    const maxLeft = note.clientWidth - 280 - 16;
+    if (left > maxLeft) left = maxLeft;
+    if (left < 8) left = 8;
+
+    popover.style.top = top + 'px';
+    popover.style.left = left + 'px';
+    popover.style.display = 'block';
+  }
+
+  function scheduleHide() {
+    if (popoverHoverTimer) clearTimeout(popoverHoverTimer);
+    popoverHoverTimer = setTimeout(() => {
+      popover.style.display = 'none';
+    }, 180);
+  }
+
+  function capitalise(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function openInteractions() {
+    const panel = document.getElementById('interactions-panel');
+    panel.classList.add('open');
+    popover.style.display = 'none';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeInteractions() {
+    document.getElementById('interactions-panel').classList.remove('open');
+  }
+</script>
+</body>
+</html>
