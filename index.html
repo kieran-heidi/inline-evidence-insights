@@ -1027,6 +1027,30 @@
     </div>
   </section>
 
+  <!-- What "Check interactions" actually does -->
+  <section class="support">
+    <h2>What "Check interactions" actually does</h2>
+    <p class="lede">No bespoke interactions endpoint. The button composes a single evidence query and posts it to the existing evidence layer - the same path any other evidence question travels.</p>
+    <pre class="json">please outline all of the interactions, the drug interactions between
+the following drugs,
+  - metformin
+  - lisinopril
+  - atorvastatin</pre>
+    <p style="margin: 14px 0 0; color: var(--muted); font-size: 13px;">List items come from <code>output_entities</code> filtered to <code>category == "medication"</code>. Default to the normalised <code>term</code>; falling back to <code>raw_span</code> is fine if we want to pass through exactly what the clinician wrote. Either way it's just a string + a list - no new infra.</p>
+  </section>
+
+  <!-- Dependency: MIMS in evidence -->
+  <section class="support">
+    <h2>Dependency - MIMS in evidence (EVI-1318)</h2>
+    <p class="lede">Aryen is currently looking into the MIMS integration. The plan is to load MIMS content into Mongo (or a vector DB) so it's queryable from our own evidence layer - a near-perfect fit for this POC.</p>
+    <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
+      <li>Medication TLDR and the interactions check can both pull from the same evidence source once MIMS content lives in our DB.</li>
+      <li>This work is potentially dependent on <strong>EVI-1318</strong> landing - no need to duplicate the MIMS plumbing.</li>
+      <li>Comment added on EVI-1318 flagging the overlap.</li>
+      <li>Later we can expand beyond medications to the other entity categories the extractor already returns.</li>
+    </ul>
+  </section>
+
   <footer class="page-foot">
     Inline Evidence Insights - POC visualisation - 2026-04-30
   </footer>
